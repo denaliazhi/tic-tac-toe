@@ -26,7 +26,7 @@ const board = (function () {
     const grid = Array.from(
                     { length: n },
                     () => new Array(n).fill() 
-                    // Explicitly fills w/ `undefined`
+                    // Explicitly fills w/ undefined
                 );
     console.log(grid);
 
@@ -39,7 +39,6 @@ const board = (function () {
     }
 
     const show = function () {
-        
         // Render top border of board
         let render = '+ - + - + - +\n';
 
@@ -58,7 +57,6 @@ const board = (function () {
     }
 
     const reset = function () {
-
         for (let row = 0; row < n; row++) {
             for (let col = 0; col < n; col++) {
                 grid[row][col] = undefined;
@@ -66,12 +64,126 @@ const board = (function () {
         }
     }
 
-    return { update, show, reset};
+    const getStatus = function () {
+        const win = (checkRow() 
+                    || checkColumn() 
+                    || checkDiagonal()
+                    || checkAntidiagonal())
+        if (win) {
+            return "win";
+        } else if (checkDraw()) {
+            return "draw";
+        }
+        return "continue";
+    }
+
+    // Helper functions
+
+    function checkRow () {
+        for (let row = 0; row < n; row++) {
+    
+            // Compare each item to first in row
+            let firstItem = grid[row][0];
+
+            if (firstItem &&
+                grid[row].every(item => (
+                    item === firstItem )
+                )) {
+                console.log(`checkRow: true`);
+                return true;
+            }
+        }
+        console.log(`checkRow: false`);
+        return false;
+    }
+
+    function checkColumn () {
+        for (let col = 0; col < n; col++) {
+
+            let win = false;
+            let firstItem = grid[0][col];
+
+            if (firstItem) { // First item is defined
+                for (let row = 1; row < n; row++) {
+                    // Compare each item to first in column
+                    if (grid[row][col] !== firstItem) {
+                        win = false;
+                        break;
+                    } else {
+                        win = true;
+                    }
+                }
+                console.log(`checkColumn: ${win}`);
+                if (win) return true;
+            }
+        }
+
+        console.log(`checkColumn: false`);
+        return false;
+    }
+
+    function checkDiagonal () {
+        let firstItem = grid[0][0];
+        let win = true;
+
+        if (firstItem) {
+            for (let i = 1; i < n; i++) {
+                if (grid[i][i] !== firstItem) {
+                    win = false;
+                }
+            }
+        } else {
+            win = false;
+        }
+        console.log(`checkDiagonal: ${win}`);
+        return win;
+    }
+
+    function checkAntidiagonal () {
+        let firstItem = grid[n - 1][0];
+        let win = true;
+
+        if (firstItem) {
+            for (let i = (n - 2); i >= 0; i--) {
+                let j = (n - 1) - i; 
+                if (grid[i][j] !== firstItem) {
+                    win = false;
+                }
+            }
+        } else {
+            win = false;
+        }
+        console.log(`checkAntidiagonal: ${win}`);
+        return win;
+    }
+
+    function checkDraw () {
+        for (let row = 0; row < n; row++) {
+
+            if (!grid[row].every(item => (
+                    item !== undefined )
+                )) {
+                // Some item is undefined
+                return false;
+            }
+        }
+        // All items defined but no win
+        console.log(`checkDraw: true`);
+        return true;
+    }
+
+    return { update, show, reset, getStatus};
 })();  
 
 board.update('O', 0, 0);
+board.update('X', 0, 1);
+board.update('X', 0, 2);
 board.update('X', 1, 0);
-board.update('O', 2, 0);
+board.update('O', 1, 1);
+board.update('O', 1, 2);
+board.update('X', 2, 0);
+board.update('O', 2, 1);
+console.log(board.getStatus());
 console.log(board.show());
 
 /*        
