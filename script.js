@@ -63,11 +63,11 @@ const board = (function () {
                     || checkDiagonal(lastMove)
                     || checkAntidiagonal(lastMove))
         if (win) {
-            return "win";
+            return 'win';
         } else if (checkDraw()) {
-            return "draw";
+            return 'draw';
         }
-        return "continue";
+        return 'continue';
     }
 
     // Helper functions
@@ -151,7 +151,7 @@ const board = (function () {
     return { update, show, reset, getStatus};
 })();  
 
-// Factory function to create a player
+// Create a player (factory function)
 function createPlayer (name, marker) {
 
     // Private variable
@@ -163,57 +163,58 @@ function createPlayer (name, marker) {
     return { name, marker, getScore, giveWin };
 }
 
-const player1 = createPlayer('Player 1', 'X');
-const player2 = createPlayer('Player 2', 'O');
+// Main function to run game
+function playGame () {
 
-/*        
+    const players = {};
+    players.one = createPlayer(prompt('Name of Player 1: '), 'X');
+    players.two = createPlayer(prompt('Name of Player 2: '), 'O');
+    
+    let playRound = true;
+    while (playRound) {
+        console.log('New round!');
+        console.log(board.show());
 
-TO RUN THE GAME
-createGame()
+        let turn = ((Math.floor(Math.random() * 2) + 1) === 1 ) 
+                    ? players.one : players.two;
+        let keepPlaying = true;
+        
+        while (keepPlaying) {
+            console.log(`It's ${turn.name}'s turn.`);
 
-    1. Create `board`
-    2. Prompt user to enter player names
-    3. Create two `player` objects with names
+            let resp = prompt('Place your piece: x, y');
+            let position = resp.split(',');
 
-    4. Randomly select player to start
-       Store player name as `turn`
-    5. Set `playGame` to true
+            // Piece successfully placed
+            if (board.update(turn.marker, +position[0], +position[1])) {
+                switch (board.getStatus()) {
+                    case 'win':
+                        console.log(`${turn.name} wins this round.`);
+                        turn.giveWin();
+                        keepPlaying = false;
+                        break;
+                    case 'draw':
+                        console.log(`It's a draw.`);
+                        keepPlaying = false;
+                        break;
+                    case 'continue':
+                        // Other player's turn
+                        turn = (turn.name === players.one.name) ? players.two : players.one;
+                        break;
+                }
+            } else {
+                console.log(`Not possible. Try again.`);
+            }
+            console.log(board.show());
+        }
+        board.reset();
 
-    6. While `playGame` is true:
-       A. Prompt user 'Start new game? Y/N'
+        console.log(`---Score---
+        ${players.one.name}: ${players.one.getScore()}
+        ${players.two.name}: ${players.two.getScore()}`)
+        
+        playRound = prompt('Start new round? Y / N') === 'Y' ? true : false;
+    }
+}
 
-       B. If response is 'Y':
-           i. Set `playRound` to true
-
-          ii. While `playRound` is true:
-                1. Display board
-                2. Prompt player with current `turn` for position
-                    on which to place their marker
-                3. Update board with move
-                4. If update success,
-                    Check status of board
-                    If win
-                        Increment score of player with winning marker
-                        Print outcome 'Player { } won.'
-                        Set `playRound` to false
-                    Else if draw
-                        Print outcome 'It's a draw.'
-                        Set `playRound` to false
-                    Else change `turn` to other player
-
-         iii. Reset board at end of round
-         iv.  Display player scores
-
-        Else set `playGame` to false
-       
-*/
-
-// board.update('O', 0, 0);
-// board.update('X', 0, 1);
-// board.update('X', 0, 2);
-// board.update('X', 1, 0);
-// board.update('O', 1, 1);
-// board.update('O', 1, 2);
-// board.update('X', 2, 0);
-// console.log(board.getStatus());
-// console.log(board.show());
+playGame();
