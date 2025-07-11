@@ -1,26 +1,10 @@
+
 /*
-
-PREMISE
-
-This app will allow users to play the classic
-game 'Tic Tac Toe.' The game is played between
-two people (Player 1 vs Player 2). The players
-will take turns putting their respective markers 
-('X' vs 'O') onto a 3x3 grid. 
-
-The first player whose markers form 3-in-a-row 
-is the winner. If the grid is full, and no player
-has achieved 3-in-a-row, then the game is a draw.
-
-================================================
-
-PSEUDOCODE
-For barebones version played in console
-
---------------------------
-TO CREATE THE BOARD
+This code allows users to play
+the classic game of tic tac toe.
 */
 
+// Create the board
 const board = (function () {
     const n = 3;
     const grid = Array.from(
@@ -167,38 +151,23 @@ const board = (function () {
     return { update, show, reset, getStatus};
 })();  
 
-board.update('O', 0, 0);
-board.update('X', 0, 1);
-board.update('X', 0, 2);
-board.update('X', 1, 0);
-board.update('O', 1, 1);
-board.update('O', 1, 2);
-board.update('X', 2, 0);
-console.log(board.getStatus());
-console.log(board.show());
+// Factory function to create a player
+function createPlayer (name, marker) {
+
+    // Private variable
+    let score = 0;
+
+    const getScore = () => score;
+    const giveWin = () => score++;
+
+    return { name, marker, getScore, giveWin };
+}
+
+const player1 = createPlayer('Player 1', 'X');
+const player2 = createPlayer('Player 2', 'O');
 
 /*        
---------------------------
-TO CREATE EACH PLAYER
-createPlayer(name, marker)
 
-    1. Store player `name`
-       Store player `marker`
-    2. Initialize `score` to 0
-    3. Write methods to track `score`
-
-        A. TO UPDATE THE SCORE
-           giveWin()
-
-           1. Increment `score`
-
-        B. TO READ THE SCORE
-           getScore()
-
-           1. Return current `score`
-
-
---------------------------
 TO RUN THE GAME
 createGame()
 
@@ -238,3 +207,13 @@ createGame()
         Else set `playGame` to false
        
 */
+
+// board.update('O', 0, 0);
+// board.update('X', 0, 1);
+// board.update('X', 0, 2);
+// board.update('X', 1, 0);
+// board.update('O', 1, 1);
+// board.update('O', 1, 2);
+// board.update('X', 2, 0);
+// console.log(board.getStatus());
+// console.log(board.show());
