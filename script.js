@@ -30,11 +30,20 @@ const board = (function () {
                 );
     console.log(grid);
 
+    let lastMove = {
+        row: undefined, 
+        col: undefined
+    };
+
     const update = function (marker, row, col) {
         if (grid[row][col] !== undefined) {
             return false;
         }
+
         grid[row][col] = marker;
+        lastMove.row = row;
+        lastMove.col = col;
+
         return true;
     }
 
@@ -65,10 +74,10 @@ const board = (function () {
     }
 
     const getStatus = function () {
-        const win = (checkRow() 
-                    || checkColumn() 
-                    || checkDiagonal()
-                    || checkAntidiagonal())
+        const win = (checkRow(lastMove.row) 
+                    || checkColumn(lastMove.col) 
+                    || checkDiagonal(lastMove)
+                    || checkAntidiagonal(lastMove))
         if (win) {
             return "win";
         } else if (checkDraw()) {
@@ -79,93 +88,76 @@ const board = (function () {
 
     // Helper functions
 
-    function checkRow () {
-        for (let row = 0; row < n; row++) {
-    
-            // Compare each item to first in row
-            let firstItem = grid[row][0];
+    function checkRow (row) {
+        // Compare each item to first in row
+        let firstItem = grid[row][0];
 
-            if (firstItem &&
-                grid[row].every(item => (
-                    item === firstItem )
-                )) {
-                console.log(`checkRow: true`);
-                return true;
-            }
+        if (firstItem &&
+            grid[row].every(item => (
+                item === firstItem )
+            )) {
+            console.log(`checkRow: true`);
+            return true;
         }
         console.log(`checkRow: false`);
         return false;
     }
 
-    function checkColumn () {
-        for (let col = 0; col < n; col++) {
+    function checkColumn (col) {
+        let firstItem = grid[0][col];
 
-            let win = false;
-            let firstItem = grid[0][col];
+        if (!firstItem) return false; 
 
-            if (firstItem) { // First item is defined
-                for (let row = 1; row < n; row++) {
-                    // Compare each item to first in column
-                    if (grid[row][col] !== firstItem) {
-                        win = false;
-                        break;
-                    } else {
-                        win = true;
-                    }
-                }
-                console.log(`checkColumn: ${win}`);
-                if (win) return true;
-            }
+        for (let row = 1; row < n; row++) {
+            // Compare each item to first in column
+            if (grid[row][col] !== firstItem) {
+                console.log(`checkColumn: false`);
+                return false;
+            } 
         }
-
-        console.log(`checkColumn: false`);
-        return false;
+        console.log(`checkColumn: true`);
+        return true;
     }
 
-    function checkDiagonal () {
+    function checkDiagonal ({row, col}) {
+        // Last marker wasn't on diagonal
+        if (row !== col) return false;
+
         let firstItem = grid[0][0];
-        let win = true;
+        if (!firstItem) return false;
 
-        if (firstItem) {
-            for (let i = 1; i < n; i++) {
-                if (grid[i][i] !== firstItem) {
-                    win = false;
-                }
+        for (let i = 1; i < n; i++) {
+            if (grid[i][i] !== firstItem) {
+
+                console.log(`checkDiagonal: false`);
+                return false;
             }
-        } else {
-            win = false;
         }
-        console.log(`checkDiagonal: ${win}`);
-        return win;
+        console.log(`checkDiagonal: true`);
+        return true;
     }
 
-    function checkAntidiagonal () {
-        let firstItem = grid[n - 1][0];
-        let win = true;
+    function checkAntidiagonal ({row, col}) {
 
-        if (firstItem) {
-            for (let i = (n - 2); i >= 0; i--) {
-                let j = (n - 1) - i; 
-                if (grid[i][j] !== firstItem) {
-                    win = false;
-                }
+        // Last marker wasn't on antidiagonal
+        if ((row + col) !== (n - 1)) return false;
+        let firstItem = grid[n - 1][0];
+
+        if (!firstItem) return false;
+        for (let i = (n - 2); i >= 0; i--) {
+            let j = (n - 1) - i; 
+            if (grid[i][j] !== firstItem) {
+                console.log(`checkAntidiagonal: false`);
+                return false;
             }
-        } else {
-            win = false;
         }
-        console.log(`checkAntidiagonal: ${win}`);
-        return win;
+        console.log(`checkAntidiagonal: true`);
+        return true;
     }
 
     function checkDraw () {
         for (let row = 0; row < n; row++) {
-
-            if (!grid[row].every(item => (
-                    item !== undefined )
-                )) {
-                // Some item is undefined
-                return false;
-            }
+            if (grid[row].includes(undefined)) return false;
         }
         // All items defined but no win
         console.log(`checkDraw: true`);
@@ -182,7 +174,6 @@ board.update('X', 1, 0);
 board.update('O', 1, 1);
 board.update('O', 1, 2);
 board.update('X', 2, 0);
-board.update('O', 2, 1);
 console.log(board.getStatus());
 console.log(board.show());
 
