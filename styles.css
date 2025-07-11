@@ -5,14 +5,15 @@
 }
 
 :root {
-    --green: #B0C4AE;
-    --lightgreen: #D4EED4;
-    --darkgreen: #8BA48B4D;
-    --shadow: #55555540;
+    --green: 176, 196, 174;
+    --lightgreen: 211, 238, 211;
+    --darkgreen: 139, 164, 139;
+    --shadow: 85, 85, 85;
 }
 
 body {
-    background-color: var(--green);
+    background-color: rgb(var(--green));
+    font-family: "Inter", sans-serif;
 }
 
 body > div {
@@ -23,6 +24,8 @@ body > div {
     gap: 2rem;
 }
 
+/* -- GAME BOARD -- */
+
 .board {
     flex: none;
 
@@ -31,7 +34,7 @@ body > div {
     padding: 0.2rem;
 
     border-radius: 0.5rem;
-    background-color: var(--darkgreen);
+    background-color: rgba(var(--darkgreen), 0.3);
 
     display: flex;
     flex-wrap: wrap;
@@ -42,15 +45,108 @@ body > div {
 .square {
     width: 6rem;
     height: 6rem;
-
-    background-color: var(--green);
-
-    box-shadow: 0 0.2rem 0.1rem 0 var(--shadow);
+    background-color: rgb(var(--green));
+    box-shadow: 0 0.2rem 0.1rem 0 rgba(var(--shadow), 0.25);
+    transition: box-shadow ease-out 0.1s;
 }
+
+.board .square:first-child {
+    border-top-left-radius: 0.3rem;
+}
+
+.board .square:nth-child(3) {
+    border-top-right-radius: 0.3rem;
+}
+
+.board .square:nth-child(7) {
+    border-bottom-left-radius: 0.3rem;
+}
+
+.board .square:last-child {
+    border-bottom-right-radius: 0.3rem;
+}
+
+.square:hover {
+    border: dashed 0.15rem rgb(var(--darkgreen));
+    box-shadow: none;
+    cursor: pointer;
+}
+
+/* -- HEADER and SCORE BOARD -- */
 
 header {
     flex: none;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    color: rgba(255, 255, 255, .35);
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 85%;
+    width: 5rem;
+}
+
+header > div:first-child {
+    display: flex;
+}
+
+header div:first-child img {
+    width: auto;
+    height: 5rem;
+    margin-left: -1rem;
+    transform: rotate(-10deg);
+}
+
+.scoreboard > div {
+    position: relative;
+    padding: 0.6rem;
+
+    border: 2px solid rgba(var(--darkgreen), 0.8);
+    border-radius: 0.4rem;
+}
+
+.scoreboard div:first-child {
+    margin-bottom: 1rem;
+}
+
+.scoreboard div:first-child::after {
+    display: inline-block;
+    content: '';
+    background: url(assets/tic-tac-green.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 1.85rem;
+    height: 1.85rem;
+
+    position: absolute;
+    right: -0.8rem;
+    bottom: -0.5rem;
+    transform: rotate(-90deg);
+
+}
+.scoreboard div:last-child::after {
+    display: inline-block;
+    content: '';
+    background: url(assets/tic-tac-white.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 1.85rem;
+    height: 1.85rem;
+
+    position: absolute;
+    left: -1rem;
+    bottom: -0.7rem;
+    transform: rotate(65deg);
+}
+
+.scoreboard h2 {
+    font-size: 1rem;
+}
+.scoreboard p {
+    font-size: 1.6rem;
+    font-weight: 800;
 }
