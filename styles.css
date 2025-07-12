@@ -17,7 +17,7 @@ body {
 }
 
 body > div {
-    width: 50%;
+    width: min-content;
     margin: 3rem auto;
 
     display: flex;
@@ -48,6 +48,7 @@ body > div {
     background-color: rgb(var(--green));
     box-shadow: 0 0.2rem 0.1rem 0 rgba(var(--shadow), 0.25);
     transition: box-shadow ease-out 0.1s;
+    text-align: center;
 }
 
 .board .square:first-child {
@@ -71,6 +72,41 @@ body > div {
     box-shadow: none;
     cursor: pointer;
 }
+
+.marker {
+    width: 2.5rem;
+    height: auto;
+    margin-top: 1.3rem;
+}
+
+/* -- ROUND STATUS -- */
+.round-status {
+    text-align: center;
+    margin-top: 1rem;
+    background-color: rgb(var(--darkgreen), 0.3);
+    border-radius: 0.5rem;
+}
+
+.round-status p {
+    color: white;
+}
+
+.round-status button {
+    width: 100%;
+    outline: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background-color: rgba(var(--darkgreen), 0.3);
+    color: rgb(var(--lightgreen));
+}
+
+.round-status button:hover {
+    color: white;
+    background-color: rgba(var(--darkgreen), 0.8);
+    cursor: pointer;
+}
+
 
 /* -- HEADER and SCORE BOARD -- */
 

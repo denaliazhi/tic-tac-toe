@@ -4,6 +4,16 @@ This code allows users to play
 the classic game of tic tac toe.
 */
 
+const statusBar = document.querySelector('.round-status');
+const playBtn = document.createElement('button');
+
+playBtn.textContent = 'play';
+playBtn.addEventListener("click", () => {
+    // playGame();
+})
+
+statusBar.appendChild(playBtn);
+
 // Create the board
 const board = (function () {
     const n = 3;
@@ -217,4 +227,3 @@ function playGame () {
     }
 }
 
-playGame();
