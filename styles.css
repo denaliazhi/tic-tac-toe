@@ -83,12 +83,14 @@ body > div {
 .round-status {
     text-align: center;
     margin-top: 1rem;
+    height: 2rem;
     background-color: rgb(var(--darkgreen), 0.3);
     border-radius: 0.5rem;
 }
 
 .round-status p {
     color: white;
+    padding: 0.3rem 1rem;
 }
 
 .round-status button {

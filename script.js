@@ -8,11 +8,9 @@ const statusBar = document.querySelector('.round-status');
 const playBtn = document.createElement('button');
 
 playBtn.textContent = 'play';
-playBtn.addEventListener("click", () => {
-    // playGame();
-})
+playBtn.addEventListener('click', playGame);
 
-statusBar.appendChild(playBtn);
+statusBar.appendChild(playBtn); 
 
 // Create the board
 const board = (function () {
@@ -158,7 +156,7 @@ const board = (function () {
         return true;
     }
 
-    return { update, show, reset, getStatus};
+    return { n, update, show, reset, getStatus};
 })();  
 
 // Create a player (factory function)
@@ -175,55 +173,72 @@ function createPlayer (name, marker) {
 
 // Main function to run game
 function playGame () {
+    const markers = {
+        X: 'assets/tic-tac-green.png',
+        O: 'assets/tic-tac-white.png'
+    }
 
     const players = {};
     players.one = createPlayer(prompt('Name of Player 1: '), 'X');
     players.two = createPlayer(prompt('Name of Player 2: '), 'O');
-    
-    let playRound = true;
-    while (playRound) {
-        console.log('New round!');
-        console.log(board.show());
 
-        let turn = ((Math.floor(Math.random() * 2) + 1) === 1 ) 
-                    ? players.one : players.two;
-        let keepPlaying = true;
-        
-        while (keepPlaying) {
-            console.log(`It's ${turn.name}'s turn.`);
+    const playerNames = document.querySelectorAll('.scoreboard h2');
+    playerNames[0].textContent = players.one.name;
+    playerNames[1].textContent = players.two.name;
 
-            let resp = prompt('Place your piece: x, y');
-            let position = resp.split(',');
+    // Remove play button
+    statusBar.removeChild(playBtn);
 
-            // Piece successfully placed
-            if (board.update(turn.marker, +position[0], +position[1])) {
+    let turn = ((Math.floor(Math.random() * 2) + 1) === 1 ) 
+                ? players.one : players.two;
+
+    let statusMsg = document.createElement('p');
+            
+    statusMsg.textContent = `it's ${turn.name}'s turn.`;
+    statusBar.appendChild(statusMsg);
+
+    // Track position of clicked square
+
+    const squares = [...document.querySelectorAll('.square')];
+    squares.forEach((square) => {
+        square.addEventListener('click', (e) => {
+            let rowIndex, colIndex, updated;
+            const clicked = e.target;
+            const index = squares.indexOf(clicked);
+            console.log(index);
+            rowIndex = Math.floor(index / board.n);
+            colIndex = index % board.n;
+
+            updated = board.update(turn.marker, rowIndex, colIndex);
+
+            if (updated) {
+                const tictac = document.createElement('img');
+                tictac.setAttribute('src', markers[turn.marker]);
+                tictac.classList.add('marker');
+                clicked.appendChild(tictac);
+            
                 switch (board.getStatus()) {
                     case 'win':
-                        console.log(`${turn.name} wins this round.`);
+                        statusMsg.textContent = `${turn.name} wins this round.`;
                         turn.giveWin();
-                        keepPlaying = false;
+                        // Update UI for scoreboard
+                        board.reset(); // Clear UI and restore play game button
                         break;
                     case 'draw':
-                        console.log(`It's a draw.`);
-                        keepPlaying = false;
+                        statusMsg.textContent = `it's a draw.`;
+                        board.reset();
                         break;
                     case 'continue':
                         // Other player's turn
                         turn = (turn.name === players.one.name) ? players.two : players.one;
+                        statusMsg.textContent = `it's ${turn.name}'s turn.`;
                         break;
                 }
-            } else {
-                console.log(`Not possible. Try again.`);
-            }
-            console.log(board.show());
-        }
-        board.reset();
 
-        console.log(`---Score---
-        ${players.one.name}: ${players.one.getScore()}
-        ${players.two.name}: ${players.two.getScore()}`)
-        
-        playRound = prompt('Start new round? Y / N') === 'Y' ? true : false;
-    }
+            } else {
+                statusMsg.textContent = `space taken. try again.`;
+            }
+        })
+    })
 }
 
