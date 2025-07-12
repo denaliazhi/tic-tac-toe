@@ -6,63 +6,73 @@ the classic game of tic tac toe.
 
 const statusBar = document.querySelector('.round-status');
 const playBtn = document.createElement('button');
-
 playBtn.textContent = 'play';
 playBtn.addEventListener('click', playGame);
-
 statusBar.appendChild(playBtn); 
 
 // Create the board
 const board = (function () {
+
+    // Dynamically render board
     const n = 3;
-    const grid = Array.from(
-                    { length: n },
-                    () => new Array(n).fill() 
-                    // Explicitly fills w/ undefined
-                );
-    console.log(grid);
+    const grid = [];
+    const boardUI = document.querySelector('.board');
+
+    function makeSquare () {
+        const squareUI = document.createElement('div');
+        squareUI.classList.add('square');
+        return squareUI;
+    }
+
+    for (let i = 0; i < n; i++) {
+        grid[i] = [];
+        for (let j = 0; j < n; j++) {
+            let square = makeSquare();
+            grid[i][j] = square;
+            boardUI.appendChild(square);
+        }
+    }
 
     let lastMove = {
         row: undefined, 
         col: undefined
     };
 
-    const update = function (marker, row, col) {
-        if (grid[row][col] !== undefined) {
+    const markers = {
+        X: 'assets/tic-tac-green.png',
+        O: 'assets/tic-tac-white.png'
+    }
+
+    const update = function (turn, row, col, target) {
+        if (target.hasChildNodes()) {
             return false;
         }
 
-        grid[row][col] = marker;
         lastMove.row = row;
         lastMove.col = col;
+
+        const tictac = document.createElement('img');
+        tictac.setAttribute('src', markers[turn.marker]);
+        tictac.classList.add('marker');
+        target.appendChild(tictac);
 
         return true;
     }
 
-    const show = function () {
-        // Render top border of board
-        let render = '+ - + - + - +\n';
+    const reset = function (msg) {
 
-        // Render rest of board row by row
         for (let row = 0; row < n; row++) {
             for (let col = 0; col < n; col++) {
-                let pos = grid[row][col];
-
-                // If no marker at position, show a space
-                render += ((pos !== undefined) ? `| ${pos} `: '|   ');
-            }
-            // Render bottom border of each row
-            render += '|\n+ - + - + - +\n'
-        }
-        return render;
-    }
-
-    const reset = function () {
-        for (let row = 0; row < n; row++) {
-            for (let col = 0; col < n; col++) {
-                grid[row][col] = undefined;
+                let parent = grid[row][col];
+                if (parent.hasChildNodes()) {
+                    let child = parent.querySelector('img');
+                    parent.removeChild(child);
+                }
             }
         }
+
+        statusBar.removeChild(msg);
+        statusBar.appendChild(playBtn); 
     }
 
     const getStatus = function () {
@@ -84,9 +94,9 @@ const board = (function () {
         // Compare each item to first in row
         let firstItem = grid[row][0];
 
-        if (firstItem &&
+        if (firstItem.hasChildNodes() &&
             grid[row].every(item => (
-                item === firstItem )
+                item.isEqualNode(firstItem))
             )) {
             console.log(`checkRow: true`);
             return true;
@@ -98,11 +108,11 @@ const board = (function () {
     function checkColumn (col) {
         let firstItem = grid[0][col];
 
-        if (!firstItem) return false; 
+        if (!firstItem.hasChildNodes()) return false; 
 
         for (let row = 1; row < n; row++) {
             // Compare each item to first in column
-            if (grid[row][col] !== firstItem) {
+            if (!grid[row][col].isEqualNode(firstItem)) {
                 console.log(`checkColumn: false`);
                 return false;
             } 
@@ -116,10 +126,10 @@ const board = (function () {
         if (row !== col) return false;
 
         let firstItem = grid[0][0];
-        if (!firstItem) return false;
+        if (!firstItem.hasChildNodes()) return false;
 
         for (let i = 1; i < n; i++) {
-            if (grid[i][i] !== firstItem) {
+            if (!grid[i][i].isEqualNode(firstItem)) {
 
                 console.log(`checkDiagonal: false`);
                 return false;
@@ -135,10 +145,10 @@ const board = (function () {
         if ((row + col) !== (n - 1)) return false;
         let firstItem = grid[n - 1][0];
 
-        if (!firstItem) return false;
+        if (!firstItem.hasChildNodes()) return false;
         for (let i = (n - 2); i >= 0; i--) {
             let j = (n - 1) - i; 
-            if (grid[i][j] !== firstItem) {
+            if (!grid[i][j].isEqualNode(firstItem)) {
                 console.log(`checkAntidiagonal: false`);
                 return false;
             }
@@ -149,14 +159,16 @@ const board = (function () {
 
     function checkDraw () {
         for (let row = 0; row < n; row++) {
-            if (grid[row].includes(undefined)) return false;
+            for (let col = 0; col < n; col++) {
+                if (!grid[row][col].hasChildNodes()) return false;
+            }
         }
-        // All items defined but no win
+        // All squares have markers
         console.log(`checkDraw: true`);
         return true;
     }
 
-    return { n, update, show, reset, getStatus};
+    return { n, update, reset, getStatus};
 })();  
 
 // Create a player (factory function)
@@ -173,10 +185,6 @@ function createPlayer (name, marker) {
 
 // Main function to run game
 function playGame () {
-    const markers = {
-        X: 'assets/tic-tac-green.png',
-        O: 'assets/tic-tac-white.png'
-    }
 
     const players = {};
     players.one = createPlayer(prompt('Name of Player 1: '), 'X');
@@ -204,29 +212,30 @@ function playGame () {
         square.addEventListener('click', (e) => {
             let rowIndex, colIndex, updated;
             const clicked = e.target;
+            
             const index = squares.indexOf(clicked);
             console.log(index);
+
             rowIndex = Math.floor(index / board.n);
             colIndex = index % board.n;
 
-            updated = board.update(turn.marker, rowIndex, colIndex);
+            updated = board.update(turn, rowIndex, colIndex, clicked);
 
             if (updated) {
-                const tictac = document.createElement('img');
-                tictac.setAttribute('src', markers[turn.marker]);
-                tictac.classList.add('marker');
-                clicked.appendChild(tictac);
             
                 switch (board.getStatus()) {
                     case 'win':
                         statusMsg.textContent = `${turn.name} wins this round.`;
                         turn.giveWin();
-                        // Update UI for scoreboard
-                        board.reset(); // Clear UI and restore play game button
+
+                        // TO DO: Update UI for scoreboard
+                        
+                        // Clear UI and restore play game button
+                        board.reset(statusMsg); 
                         break;
                     case 'draw':
                         statusMsg.textContent = `it's a draw.`;
-                        board.reset();
+                        board.reset(statusMsg);
                         break;
                     case 'continue':
                         // Other player's turn
