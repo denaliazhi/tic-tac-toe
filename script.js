@@ -1,253 +1,257 @@
-
 /*
 This code allows users to play
 the classic game of tic tac toe.
 */
 
-const statusBar = document.querySelector('.round-status');
-const playBtn = document.createElement('button');
-playBtn.textContent = 'play';
-playBtn.addEventListener('click', playGame);
-statusBar.appendChild(playBtn); 
+// Render start game button
+const gameBar = document.querySelector(".game-bar");
+const playButton = document.createElement("button");
 
-// Create the board
+playButton.textContent = "play";
+playButton.addEventListener("click", playGame, { once: true });
+
+gameBar.appendChild(playButton);
+
+// Render the board
+// IIFE to prevent multiple boards from being created
 const board = (function () {
+  // Board size is n x n
+  const n = 3;
+  const squares = [];
+  const display = document.querySelector(".board");
 
-    // Dynamically render board
-    const n = 3;
-    const grid = [];
-    const boardUI = document.querySelector('.board');
-
-    function makeSquare () {
-        const squareUI = document.createElement('div');
-        squareUI.classList.add('square');
-        return squareUI;
+  for (let row = 0; row < n; row++) {
+    squares[row] = [];
+    for (let col = 0; col < n; col++) {
+      let square = addSquare(row, col);
+      squares[row][col] = square;
+      display.appendChild(square);
     }
+  }
+  // Helper function to add a square to the board
+  function addSquare(row, col) {
+    const square = document.createElement("div");
+    square.classList.add("square");
+    square.dataset.row = row;
+    square.dataset.col = col;
+    return square;
+  }
+
+  /* Exposed methods */
+
+  // Place a marker on the board
+  const placeMarker = function (player, square) {
+    // Square is taken
+    if (square.hasChildNodes()) return false; // DOES NOT RETURN TRUE WHEN CHILD
+    // Square is open
+    let tictac = createMarker(player.marker);
+    square.appendChild(tictac);
+    return true;
+  };
+  // Helper function to create a marker
+  function createMarker(image) {
+    const marker = document.createElement("img");
+    marker.setAttribute("src", image);
+    marker.setAttribute("alt", "A tic tac marking the square");
+    marker.classList.add("marker");
+    return marker;
+  }
+
+  // Clear the board
+  const clear = function () {
+    for (let row = 0; row < n; row++) {
+      for (let col = 0; col < n; col++) {
+        let parent = squares[row][col];
+        // Remove marker if it exists
+        if (parent.hasChildNodes()) {
+          let child = parent.querySelector("img");
+          parent.removeChild(child);
+        }
+      }
+    }
+  };
+
+  // Check the board for win
+  const check = function (player, lastMove) {
+    if (
+      checkRow(player, lastMove.row) ||
+      checkColumn(player, lastMove.col) ||
+      checkDiagonal(player, lastMove) ||
+      checkAntidiagonal(player, lastMove)
+    ) {
+      return 1;
+    }
+    return 0;
+  };
+
+  // Helper function to check row for win
+  function checkRow(player, row) {
+    console.log("checking row");
+    // Row is not full
+    if (!squares[row].every((item) => item.hasChildNodes())) return false;
+
+    // Return true if all squares in row have player's marker
+    return squares[row].every((item) =>
+      item.querySelector("img").src.includes(player.marker)
+    );
+  }
+
+  // Helper function to check column for win
+  function checkColumn(player, col) {
+    console.log("checking column");
+    for (let row = 0; row < n; row++) {
+      let item = squares[row][col];
+      if (
+        !item.hasChildNodes() ||
+        !item.querySelector("img").src.includes(player.marker)
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Helper function to check diagonal for win
+  function checkDiagonal(player, { row, col }) {
+    console.log("checking diagonal");
+    // Marker wasn't placed on diagonal
+    if (row !== col) return false;
 
     for (let i = 0; i < n; i++) {
-        grid[i] = [];
-        for (let j = 0; j < n; j++) {
-            let square = makeSquare();
-            grid[i][j] = square;
-            boardUI.appendChild(square);
-        }
-    }
-
-    let lastMove = {
-        row: undefined, 
-        col: undefined
-    };
-
-    const markers = {
-        X: 'assets/tic-tac-green.png',
-        O: 'assets/tic-tac-white.png'
-    }
-
-    const update = function (turn, row, col, target) {
-        if (target.hasChildNodes()) {
-            return false;
-        }
-
-        lastMove.row = row;
-        lastMove.col = col;
-
-        const tictac = document.createElement('img');
-        tictac.setAttribute('src', markers[turn.marker]);
-        tictac.classList.add('marker');
-        target.appendChild(tictac);
-
-        return true;
-    }
-
-    const reset = function (msg) {
-
-        for (let row = 0; row < n; row++) {
-            for (let col = 0; col < n; col++) {
-                let parent = grid[row][col];
-                if (parent.hasChildNodes()) {
-                    let child = parent.querySelector('img');
-                    parent.removeChild(child);
-                }
-            }
-        }
-
-        statusBar.removeChild(msg);
-        statusBar.appendChild(playBtn); 
-    }
-
-    const getStatus = function () {
-        const win = (checkRow(lastMove.row) 
-                    || checkColumn(lastMove.col) 
-                    || checkDiagonal(lastMove)
-                    || checkAntidiagonal(lastMove))
-        if (win) {
-            return 'win';
-        } else if (checkDraw()) {
-            return 'draw';
-        }
-        return 'continue';
-    }
-
-    // Helper functions
-
-    function checkRow (row) {
-        // Compare each item to first in row
-        let firstItem = grid[row][0];
-
-        if (firstItem.hasChildNodes() &&
-            grid[row].every(item => (
-                item.isEqualNode(firstItem))
-            )) {
-            console.log(`checkRow: true`);
-            return true;
-        }
-        console.log(`checkRow: false`);
+      let item = squares[i][i];
+      if (
+        !item.hasChildNodes() ||
+        !item.querySelector("img").src.includes(player.marker)
+      ) {
         return false;
+      }
     }
+    return true;
+  }
+  // Helper function to check anti-diagonal for win
+  function checkAntidiagonal(player, { row, col }) {
+    console.log("checking antidiagonal");
+    // Marker wasn't placed on antidiagonal
+    if (row + col !== n - 1) return false;
 
-    function checkColumn (col) {
-        let firstItem = grid[0][col];
-
-        if (!firstItem.hasChildNodes()) return false; 
-
-        for (let row = 1; row < n; row++) {
-            // Compare each item to first in column
-            if (!grid[row][col].isEqualNode(firstItem)) {
-                console.log(`checkColumn: false`);
-                return false;
-            } 
-        }
-        console.log(`checkColumn: true`);
-        return true;
+    for (let i = n - 1; i >= 0; i--) {
+      let j = n - 1 - i;
+      let item = squares[i][j];
+      if (
+        !item.hasChildNodes() ||
+        !item.querySelector("img").src.includes(player.marker)
+      ) {
+        return false;
+      }
     }
+    return true;
+  }
 
-    function checkDiagonal ({row, col}) {
-        // Last marker wasn't on diagonal
-        if (row !== col) return false;
-
-        let firstItem = grid[0][0];
-        if (!firstItem.hasChildNodes()) return false;
-
-        for (let i = 1; i < n; i++) {
-            if (!grid[i][i].isEqualNode(firstItem)) {
-
-                console.log(`checkDiagonal: false`);
-                return false;
-            }
-        }
-        console.log(`checkDiagonal: true`);
-        return true;
-    }
-
-    function checkAntidiagonal ({row, col}) {
-
-        // Last marker wasn't on antidiagonal
-        if ((row + col) !== (n - 1)) return false;
-        let firstItem = grid[n - 1][0];
-
-        if (!firstItem.hasChildNodes()) return false;
-        for (let i = (n - 2); i >= 0; i--) {
-            let j = (n - 1) - i; 
-            if (!grid[i][j].isEqualNode(firstItem)) {
-                console.log(`checkAntidiagonal: false`);
-                return false;
-            }
-        }
-        console.log(`checkAntidiagonal: true`);
-        return true;
-    }
-
-    function checkDraw () {
-        for (let row = 0; row < n; row++) {
-            for (let col = 0; col < n; col++) {
-                if (!grid[row][col].hasChildNodes()) return false;
-            }
-        }
-        // All squares have markers
-        console.log(`checkDraw: true`);
-        return true;
-    }
-
-    return { n, update, reset, getStatus};
-})();  
+  return { n, placeMarker, clear, check };
+})();
 
 // Create a player (factory function)
-function createPlayer (name, marker) {
+function createPlayer(name, marker, i) {
+  const playerName = document.querySelectorAll(".scoreboard h2")[i];
+  playerName.textContent = name;
 
-    // Private variable
-    let score = 0;
+  // Set score as private variable
+  let score = 0;
+  const playerScore = document.querySelectorAll(".scoreboard p")[i];
+  const giveWin = function () {
+    score++;
+    playerScore.textContent = score;
+  };
 
-    const getScore = () => score;
-    const giveWin = () => score++;
-
-    return { name, marker, getScore, giveWin };
+  return { name, marker, giveWin };
 }
 
 // Main function to run game
-function playGame () {
+function playGame() {
+  const markers = ["assets/tic-tac-green.png", "assets/tic-tac-white.png"];
 
-    const players = {};
-    players.one = createPlayer(prompt('Name of Player 1: '), 'X');
-    players.two = createPlayer(prompt('Name of Player 2: '), 'O');
+  // Set up scoreboard
+  const players = [];
+  const playerCount = 2;
 
-    const playerNames = document.querySelectorAll('.scoreboard h2');
-    playerNames[0].textContent = players.one.name;
-    playerNames[1].textContent = players.two.name;
+  for (let i = 0; i < playerCount; i++) {
+    players[i] = createPlayer(
+      prompt(`Name of Player ${i + 1}: `),
+      markers[i],
+      i
+    );
+  }
 
-    // Remove play button
-    statusBar.removeChild(playBtn);
+  gameBar.removeChild(playButton);
+  let status = document.createElement("p");
+  gameBar.appendChild(status);
 
-    let turn = ((Math.floor(Math.random() * 2) + 1) === 1 ) 
-                ? players.one : players.two;
+  playRound();
 
-    let statusMsg = document.createElement('p');
-            
-    statusMsg.textContent = `it's ${turn.name}'s turn.`;
-    statusBar.appendChild(statusMsg);
+  // ----------------------------------------------
 
-    // Track position of clicked square
+  // Function to run a round
+  function playRound() {
+    // Set up progress trackers for round
+    let totalMoves = 0;
+    let lastMove = {
+      row: undefined,
+      col: undefined,
+    };
 
-    const squares = [...document.querySelectorAll('.square')];
-    squares.forEach((square) => {
-        square.addEventListener('click', (e) => {
-            let rowIndex, colIndex, updated;
-            const clicked = e.target;
-            
-            const index = squares.indexOf(clicked);
-            console.log(index);
+    // Randomly assign player to first turn
+    let turn = players[Math.floor(Math.random() * playerCount)];
+    // Update game bar to show player turn
+    status.textContent = `it's ${turn.name}'s turn.`;
 
-            rowIndex = Math.floor(index / board.n);
-            colIndex = index % board.n;
+    // Listen for click on board
+    const squares = document.querySelector(".board");
+    squares.addEventListener("click", (e) => {
+      if (e.target.classList.contains("square")) {
+        const square = e.target;
+        const row = +square.getAttribute("data-row");
+        const col = +square.getAttribute("data-col");
 
-            updated = board.update(turn, rowIndex, colIndex, clicked);
+        let placed = board.placeMarker(turn, square);
+        // console.log({ row, col, placed });
 
-            if (updated) {
-            
-                switch (board.getStatus()) {
-                    case 'win':
-                        statusMsg.textContent = `${turn.name} wins this round.`;
-                        turn.giveWin();
+        if (placed) {
+          lastMove.row = row;
+          lastMove.col = col;
+          totalMoves++;
+          evaluate();
+        } else {
+          status.textContent = `space taken. try again.`;
+        }
+      }
+    });
 
-                        // TO DO: Update UI for scoreboard
-                        
-                        // Clear UI and restore play game button
-                        board.reset(statusMsg); 
-                        break;
-                    case 'draw':
-                        statusMsg.textContent = `it's a draw.`;
-                        board.reset(statusMsg);
-                        break;
-                    case 'continue':
-                        // Other player's turn
-                        turn = (turn.name === players.one.name) ? players.two : players.one;
-                        statusMsg.textContent = `it's ${turn.name}'s turn.`;
-                        break;
-                }
-
-            } else {
-                statusMsg.textContent = `space taken. try again.`;
-            }
-        })
-    })
+    // Helper function to evaluate round status
+    function evaluate() {
+      if (board.check(turn, lastMove)) {
+        status.textContent = `${turn.name} wins this round.`;
+        turn.giveWin();
+        reset();
+      } else if (totalMoves === board.n ** 2) {
+        status.textContent = `it's a draw.`;
+        reset();
+      } else {
+        // Switch turn to other player
+        if (turn === players[0]) {
+          turn = players[1];
+        } else {
+          turn = players[0];
+        }
+        status.textContent = `it's ${turn.name}'s turn.`;
+      }
+    }
+    // Helper function to reset game
+    function reset() {
+      gameBar.removeChild(status);
+      playButton.textContent = "play again";
+      // Add new event listener to button to trigger new round not new game
+      gameBar.appendChild(playButton);
+      board.clear();
+    }
+  }
 }
-
