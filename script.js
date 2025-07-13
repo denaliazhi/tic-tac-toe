@@ -3,32 +3,25 @@ This code allows users to play
 the classic game of tic tac toe.
 */
 
-// Render start game button
-const gameBar = document.querySelector(".game-bar");
-const playButton = document.createElement("button");
-
-playButton.textContent = "play";
-playButton.addEventListener("click", playGame, { once: true });
-
-gameBar.appendChild(playButton);
-
-// Render the board
+// Set up the board
 // IIFE to prevent multiple boards from being created
 const board = (function () {
-  // Board size is n x n
+  // Board is an n x n grid of squares
   const n = 3;
   const squares = [];
   const display = document.querySelector(".board");
 
+  // Create and store each square in matrix
   for (let row = 0; row < n; row++) {
     squares[row] = [];
     for (let col = 0; col < n; col++) {
       let square = addSquare(row, col);
       squares[row][col] = square;
+      // Render in browser
       display.appendChild(square);
     }
   }
-  // Helper function to add a square to the board
+  // Helper function to add a square
   function addSquare(row, col) {
     const square = document.createElement("div");
     square.classList.add("square");
@@ -42,7 +35,8 @@ const board = (function () {
   // Place a marker on the board
   const placeMarker = function (player, square) {
     // Square is taken
-    if (square.hasChildNodes()) return false; // DOES NOT RETURN TRUE WHEN CHILD
+    if (square.hasChildNodes()) return false;
+
     // Square is open
     let tictac = createMarker(player.marker);
     square.appendChild(tictac);
@@ -87,7 +81,7 @@ const board = (function () {
   // Helper function to check row for win
   function checkRow(player, row) {
     console.log("checking row");
-    // Row is not full
+    // Row isn't full
     if (!squares[row].every((item) => item.hasChildNodes())) return false;
 
     // Return true if all squares in row have player's marker
@@ -162,35 +156,44 @@ function createPlayer(name, marker, i) {
     score++;
     playerScore.textContent = score;
   };
-
   return { name, marker, giveWin };
 }
 
-// Main function to run game
-function playGame() {
+// Main function to run game (also IIFE)
+const playGame = (function () {  
+  // Custom tic tac markers
   const markers = ["assets/tic-tac-green.png", "assets/tic-tac-white.png"];
 
-  // Set up scoreboard
+  // Render play button
+  const gameBar = document.querySelector(".game-bar");
+  const playButton = document.createElement("button");
+  playButton.textContent = "play";
+  playButton.addEventListener("click", setup, { once: true });
+  gameBar.appendChild(playButton);
+
+  // Prepare node that will replace button once clicked
+  let status = document.createElement("p");
+
   const players = [];
   const playerCount = 2;
 
-  for (let i = 0; i < playerCount; i++) {
-    players[i] = createPlayer(
-      prompt(`Name of Player ${i + 1}: `),
-      markers[i],
-      i
-    );
+  // Function to complete set up and start first round
+  function setup() {
+    for (let i = 0; i < playerCount; i++) {
+      players[i] = createPlayer(
+        prompt(`Name of Player ${i + 1}: `),
+        markers[i],
+        i
+      );
+    }
+    playRound();
   }
-
-  let status = document.createElement("p");
-  playRound();
-
-  // ----------------------------------------------
 
   // Function to run a round
   function playRound() {
     gameBar.removeChild(playButton);
     gameBar.appendChild(status);
+
     // Set up progress trackers for round
     let totalMoves = 0;
     let lastMove = {
@@ -207,7 +210,7 @@ function playGame() {
     const squares = document.querySelector(".board");
     squares.addEventListener("click", mark);
 
-    // Listener function
+    // Event handler function
     function mark(e) {
       if (e.target.classList.contains("square")) {
         const square = e.target;
@@ -251,7 +254,7 @@ function playGame() {
     // Helper function to reset game
     async function reset() {
       // Wait 2 seconds
-      await delay(3000);
+      await delay(2000);
       gameBar.removeChild(status);
       playButton.textContent = "play again";
       playButton.addEventListener("click", () => {
@@ -261,9 +264,9 @@ function playGame() {
       gameBar.appendChild(playButton);
     }
     // Helper function to delay reset
-    // Cred to stackoverflow: https://stackoverflow.com/questions/14226803/wait-5-seconds-before-executing-next-line
+    // Credit: https://stackoverflow.com/questions/14226803/wait-5-seconds-before-executing-next-line
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
   }
-}
+})();
