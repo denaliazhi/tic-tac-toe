@@ -182,16 +182,15 @@ function playGame() {
     );
   }
 
-  gameBar.removeChild(playButton);
   let status = document.createElement("p");
-  gameBar.appendChild(status);
-
   playRound();
 
   // ----------------------------------------------
 
   // Function to run a round
   function playRound() {
+    gameBar.removeChild(playButton);
+    gameBar.appendChild(status);
     // Set up progress trackers for round
     let totalMoves = 0;
     let lastMove = {
@@ -206,14 +205,16 @@ function playGame() {
 
     // Listen for click on board
     const squares = document.querySelector(".board");
-    squares.addEventListener("click", (e) => {
+    squares.addEventListener("click", mark);
+
+    // Listener function
+    function mark(e) {
       if (e.target.classList.contains("square")) {
         const square = e.target;
         const row = +square.getAttribute("data-row");
         const col = +square.getAttribute("data-col");
 
         let placed = board.placeMarker(turn, square);
-        // console.log({ row, col, placed });
 
         if (placed) {
           lastMove.row = row;
@@ -224,16 +225,18 @@ function playGame() {
           status.textContent = `space taken. try again.`;
         }
       }
-    });
+    }
 
     // Helper function to evaluate round status
     function evaluate() {
       if (board.check(turn, lastMove)) {
         status.textContent = `${turn.name} wins this round.`;
         turn.giveWin();
+        squares.removeEventListener("click", mark);
         reset();
       } else if (totalMoves === board.n ** 2) {
         status.textContent = `it's a draw.`;
+        squares.removeEventListener("click", mark);
         reset();
       } else {
         // Switch turn to other player
@@ -246,12 +249,21 @@ function playGame() {
       }
     }
     // Helper function to reset game
-    function reset() {
+    async function reset() {
+      // Wait 2 seconds
+      await delay(3000);
       gameBar.removeChild(status);
       playButton.textContent = "play again";
-      // Add new event listener to button to trigger new round not new game
+      playButton.addEventListener("click", () => {
+        board.clear();
+        playRound();
+      });
       gameBar.appendChild(playButton);
-      board.clear();
+    }
+    // Helper function to delay reset
+    // Cred to stackoverflow: https://stackoverflow.com/questions/14226803/wait-5-seconds-before-executing-next-line
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
   }
 }
