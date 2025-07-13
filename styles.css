@@ -11,6 +11,13 @@
   --shadow: 85, 85, 85;
 }
 
+/* Hacky way to re-size game for mobile */
+@media (max-width: 500px) {
+  html {
+    font-size: 10px;
+  }
+}
+
 body {
   background-color: rgb(var(--green));
   font-family: "Inter", sans-serif;
@@ -77,6 +84,17 @@ body > div {
   width: 3.5rem;
   height: auto;
   margin-top: 1.3rem;
+
+  animation: drop-in 300ms;
+}
+
+@keyframes drop-in {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0%)
+  }
 }
 
 /* -- ROUND STATUS -- */
@@ -101,6 +119,7 @@ body > div {
   border-radius: 0.5rem;
   background-color: rgba(var(--darkgreen), 0.3);
   color: rgb(var(--lightgreen));
+  font-size: 1rem;
 }
 
 .game-bar button:hover {
