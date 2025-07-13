@@ -147,7 +147,12 @@ const board = (function () {
 // Create a player (factory function)
 function createPlayer(name, marker, i) {
   const playerName = document.querySelectorAll(".scoreboard h2")[i];
-  playerName.textContent = name;
+  if (name !== null) {
+    playerName.textContent = name;
+  // If name is null, use default display name
+  } else {
+    name = playerName.textContent;
+  }
 
   // Set score as private variable
   let score = 0;
@@ -180,12 +185,22 @@ const playGame = (function () {
   // Function to complete set up and start first round
   function setup() {
     for (let i = 0; i < playerCount; i++) {
-      players[i] = createPlayer(
-        prompt(`Name of Player ${i + 1}: `),
-        markers[i],
-        i
-      );
+      let invalid = true;
+      let name;
+      do {
+        name = prompt(`Name of Player ${i + 1}: `);
+        if (name !== null &&
+            (name.trim().length === 0 ||
+            name.length > 15)
+          ) {
+          alert("Please enter a valid name (up to 15 characters).");
+        } else {
+          invalid = false;
+        }
+      } while (invalid);
+      players[i] = createPlayer(name, markers[i], i);
     }
+
     playRound();
   }
 
